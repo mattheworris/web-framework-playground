@@ -1,5 +1,5 @@
 use axum::{http::StatusCode, response::IntoResponse, routing::post, Json, Router};
-use tracing_subscriber;
+use std::net::Ipv4Addr;
 use types::WebhookCallback;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -24,11 +24,26 @@ mod types;
 )]
 struct ApiDoc;
 
+const WEBHOOK_BASE_URL: &str = "/webhooks";
+const WEBHOOK_ENDPOINT: &str = "/account-service";
+
 #[tokio::main]
 async fn main() {
-    // initialize tracing
-    tracing_subscriber::fmt::init();
-    println!("{}", ApiDoc::openapi().to_pretty_json().unwrap());
+    const HOST: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
+    const PORT: u16 = 8888;
+
+    println!(
+        "Starting Webhook Server on http://{}:{}{}{}",
+        HOST, PORT, WEBHOOK_BASE_URL, WEBHOOK_ENDPOINT
+    );
+    println!(
+        "OpenAPI Spec available at http://{}:{}/docs/openapi.json",
+        HOST, PORT
+    );
+    println!(
+        "Swagger UI available at http://{}:{}/docs/swagger",
+        HOST, PORT
+    );
 
     // build our application with a route
     let app = Router::new()
@@ -36,10 +51,7 @@ async fn main() {
         .merge(SwaggerUi::new("/docs/swagger").url("/docs/openapi.json", ApiDoc::openapi()));
 
     // run our app with hyper
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:5555")
-        .await
-        .unwrap();
-    tracing::debug!("listening on {}", listener.local_addr().unwrap());
+    let listener = tokio::net::TcpListener::bind((HOST, PORT)).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 

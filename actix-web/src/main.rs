@@ -29,6 +29,11 @@ async fn main() -> Result<(), impl Error> {
         "Starting Webhook Server on http://{}:{}{}{}",
         HOST, PORT, WEBHOOK_BASE_URL, WEBHOOK_ENDPOINT
     );
+    println!("OpenAPI Spec available at http://{}:{}/openapi.json", HOST, PORT);
+    println!("Swagger UI available at http://{}:{}/swagger", HOST, PORT);
+    println!("Rapidoc available at http://{}:{}/rapidoc", HOST, PORT);
+    println!("Redoc available at http://{}:{}/redoc", HOST, PORT);
+
     let app_state = Data::new(AppState {
         last_payload: Mutex::new(SIWFSignup {
             reference_id: "123".to_string(),
